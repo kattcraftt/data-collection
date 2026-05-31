@@ -23,13 +23,13 @@ from sentence_transformers import SentenceTransformer
 
 # BERTopic
 from bertopic import BERTopic
-from umap     import UMAP
-from hdbscan  import HDBSCAN
+from umap import UMAP
+from hdbscan import HDBSCAN
 
 # database and config
-from database   import get_engine, get_connection
+from database import get_engine, get_connection
 from nlp_config import ROBERTA_CONFIG, BERTOPIC_CONFIG, NLP_CONFIG, NLP_OUTPUT_DIR
-from config     import CSV_OUTPUT_DIR
+from config import CSV_OUTPUT_DIR
 
 # database helpers
 def load_prisma_included() -> pd.DataFrame:
@@ -74,12 +74,12 @@ def save_nlp_results(df: pd.DataFrame,
     ]
 
     available = [c for c in nlp_cols if c in df.columns]
-    records   = df[available].copy()
-    records   = records.where(pd.notnull(records), None)
+    records = df[available].copy()
+    records = records.where(pd.notnull(records), None)
 
     records_list = records.to_dict("records")
-    total        = len(records_list)
-    updated      = 0
+    total = len(records_list)
+    updated = 0
 
     print(f"\n  Saving {total:,} NLP records to PostgreSQL...")
 
@@ -167,9 +167,9 @@ def preprocess_text(text: str,
 class RoBERTaExtractor:
 
     def __init__(self, config: dict, device: torch.device):
-        self.config    = config
-        self.device    = device
-        self.model     = None
+        self.config = config
+        self.device = device
+        self.model = None
         self.tokenizer = None
 
     def load(self):
@@ -203,9 +203,9 @@ class RoBERTaExtractor:
             encoded = self.tokenizer(
                 texts,
                 return_tensors = "pt",
-                truncation     = True,
-                padding        = True,
-                max_length     = self.config["max_length"]
+                truncation = True,
+                padding = True,
+                max_length = self.config["max_length"]
             )
 
             # move to device
@@ -217,7 +217,7 @@ class RoBERTaExtractor:
             # inference
             with torch.no_grad():
                 outputs = self.model(**encoded)
-                probs   = torch.nn.functional.softmax(
+                probs = torch.nn.functional.softmax(
                     outputs.logits, dim=-1
                 ).cpu().numpy()
 
@@ -225,14 +225,14 @@ class RoBERTaExtractor:
             label_map = self.config["label_map"]
 
             for prob in probs:
-                label_idx  = int(np.argmax(prob))
+                label_idx = int(np.argmax(prob))
                 confidence = float(np.max(prob))
 
                 results.append({
-                    "sentiment_negative"  : float(prob[0]),
-                    "sentiment_neutral"   : float(prob[1]),
-                    "sentiment_positive"  : float(prob[2]),
-                    "sentiment_label"     : label_map[label_idx],
+                    "sentiment_negative": float(prob[0]),
+                    "sentiment_neutral": float(prob[1]),
+                    "sentiment_positive": float(prob[2]),
+                    "sentiment_label": label_map[label_idx],
                     "sentiment_confidence": confidence
                 })
 
@@ -241,10 +241,10 @@ class RoBERTaExtractor:
             # return neutral defaults for failed batch
             for _ in texts:
                 results.append({
-                    "sentiment_negative"  : 0.333,
-                    "sentiment_neutral"   : 0.334,
-                    "sentiment_positive"  : 0.333,
-                    "sentiment_label"     : "neutral",
+                    "sentiment_negative": 0.333,
+                    "sentiment_neutral": 0.334,
+                    "sentiment_positive": 0.333,
+                    "sentiment_label": "neutral",
                     "sentiment_confidence": 0.334
                 })
 
@@ -269,7 +269,7 @@ class RoBERTaExtractor:
 
         for i in tqdm(range(0, len(texts), batch_size),
                       desc="  RoBERTa Batches"):
-            batch   = texts[i:i + batch_size]
+            batch = texts[i:i + batch_size]
             results = self.predict_batch(batch)
             all_results.extend(results)
 
@@ -278,18 +278,18 @@ class RoBERTaExtractor:
 
         df["sentiment_negative"]  = results_df[
             "sentiment_negative"].values
-        df["sentiment_neutral"]   = results_df[
+        df["sentiment_neutral"]  = results_df[
             "sentiment_neutral"].values
-        df["sentiment_positive"]  = results_df[
+        df["sentiment_positive"] = results_df[
             "sentiment_positive"].values
-        df["sentiment_label"]     = results_df[
+        df["sentiment_label"] = results_df[
             "sentiment_label"].values
         df["sentiment_confidence"]= results_df[
             "sentiment_confidence"].values
 
         # print distribution
         label_counts = df["sentiment_label"].value_counts()
-        total        = len(df)
+        total = len(df)
 
         print(f"\n  Sentiment distribution:")
         print(f"  {'Label':<12} {'Count':>8} {'Percent':>9}")
@@ -306,9 +306,9 @@ class RoBERTaExtractor:
 class BERTopicExtractor:
 
     def __init__(self, config: dict):
-        self.config      = config
+        self.config = config
         self.topic_model = None
-        self.topic_info  = None
+        self.topic_info = None
 
     def build_model(self):
         """Build BERTopic model with configured components."""
@@ -334,12 +334,12 @@ class BERTopicExtractor:
         # build BERTopic
         self.topic_model = BERTopic(
             embedding_model = embedding_model,
-            umap_model      = umap_model,
-            hdbscan_model   = hdbscan_model,
-            nr_topics       = self.config["nr_topics"],
-            top_n_words     = self.config["top_n_words"],
-            min_topic_size  = self.config["min_topic_size"],
-            verbose         = False
+            umap_model = umap_model,
+            hdbscan_model = hdbscan_model,
+            nr_topics = self.config["nr_topics"],
+            top_n_words = self.config["top_n_words"],
+            min_topic_size = self.config["min_topic_size"],
+            verbose = False
         )
 
         print(f"  ✓ BERTopic model built")
@@ -372,7 +372,7 @@ class BERTopicExtractor:
             # get topic info
             self.topic_info = self.topic_model.get_topic_info()
 
-            n_topics   = len(self.topic_info) - 1
+            n_topics = len(self.topic_info) - 1
             n_outliers = sum(1 for t in topics if t == -1)
 
             print(f"\n  ✓ BERTopic fitting complete")
@@ -401,8 +401,8 @@ class BERTopicExtractor:
             # add topic labels
             topic_label_map = {}
             for _, row in self.topic_info.iterrows():
-                topic_id    = row["Topic"]
-                topic_name  = str(row.get("Name", ""))
+                topic_id = row["Topic"]
+                topic_name = str(row.get("Name", ""))
                 topic_label_map[topic_id] = topic_name
 
             df["topic_label"] = df["topic_id"].map(
@@ -427,9 +427,9 @@ class BERTopicExtractor:
         except Exception as e:
             print(f"\n  [BERTopic] Error: {e}")
             print(f"  Assigning default topic values...")
-            df["topic_id"]          = -1
+            df["topic_id"] = -1
             df["topic_probability"] = 0.0
-            df["topic_label"]       = "unknown"
+            df["topic_label"] = "unknown"
 
         print(f"\n  ✓ BERTopic extraction complete")
         return df
@@ -461,11 +461,11 @@ class BERTopicExtractor:
                         w for w, _ in keywords[:10]
                     ])
                     rows.append({
-                        "topic_id"  : topic_id,
-                        "keywords"  : kw_str,
-                        "top_word"  : keywords[0][0]
+                        "topic_id": topic_id,
+                        "keywords": kw_str,
+                        "top_word": keywords[0][0]
                                       if keywords else "",
-                        "doc_count" : int(
+                        "doc_count": int(
                             self.topic_info[
                                 self.topic_info["Topic"]
                                 == topic_id
@@ -513,8 +513,8 @@ def assign_behavioral_labels(df: pd.DataFrame) -> pd.DataFrame:
 
     def get_behavioral_label(row) -> str:
         sentiment = str(row.get("sentiment_label", ""))
-        text      = str(row.get("text", "")).lower()
-        conf      = float(row.get(
+        text = str(row.get("text", "")).lower()
+        conf = float(row.get(
             "sentiment_confidence", 0
         ))
 
@@ -522,7 +522,7 @@ def assign_behavioral_labels(df: pd.DataFrame) -> pd.DataFrame:
         has_intent = any(
             kw in text for kw in intent_keywords
         )
-        has_churn  = any(
+        has_churn = any(
             kw in text for kw in churn_keywords
         )
 
@@ -549,7 +549,7 @@ def assign_behavioral_labels(df: pd.DataFrame) -> pd.DataFrame:
 
     # distribution
     behavior_counts = df["predicted_behavior"].value_counts()
-    total           = len(df)
+    total = len(df)
 
     print(f"\n  Behavioral label distribution:")
     print(f"  {'Label':<20} {'Count':>8} {'Percent':>9}")
@@ -675,14 +675,14 @@ def build_nlp_summary(df: pd.DataFrame) -> pd.DataFrame:
 
     # overall sentiment
     for label in ["negative", "neutral", "positive"]:
-        col   = f"sentiment_{label}"
+        col = f"sentiment_{label}"
         count = int(
             (df["sentiment_label"] == label).sum()
         ) if "sentiment_label" in df.columns else 0
         rows.append({
-            "metric"   : f"sentiment_{label}_count",
-            "value"    : count,
-            "source"   : "roberta"
+            "metric": f"sentiment_{label}_count",
+            "value": count,
+            "source": "roberta"
         })
         if col in df.columns:
             rows.append({
@@ -699,7 +699,7 @@ def build_nlp_summary(df: pd.DataFrame) -> pd.DataFrame:
             count = int(
                 (df["predicted_behavior"] == label).sum()
             )
-            pct   = count / len(df) * 100
+            pct = count / len(df) * 100
             rows.append({
                 "metric": f"behavior_{label}_count",
                 "value" : count,
@@ -713,7 +713,7 @@ def build_nlp_summary(df: pd.DataFrame) -> pd.DataFrame:
 
     # topic stats
     if "topic_id" in df.columns:
-        n_topics   = int(
+        n_topics = int(
             df["topic_id"].nunique()
         )
         n_outliers = int(
@@ -817,10 +817,10 @@ def main():
     except Exception as e:
         print(f"\n  ✗ BERTopic failed: {e}")
         print("  Check: pip install bertopic umap-learn hdbscan")
-        df["topic_id"]          = -1
+        df["topic_id"] = -1
         df["topic_probability"] = 0.0
-        df["topic_label"]       = "unknown"
-        topic_keywords          = pd.DataFrame()
+        df["topic_label"] = "unknown"
+        topic_keywords = pd.DataFrame()
 
     # stage 3: behavioral labels
     print("\n[stage 3] Assigning behavioral labels...")
@@ -867,7 +867,7 @@ def main():
             count = int(
                 (df["predicted_behavior"] == label).sum()
             )
-            pct   = count / total * 100
+            pct = count / total * 100
             print(f"    {label:<20}: "
                   f"{count:>6,} ({pct:.1f}%)")
 
