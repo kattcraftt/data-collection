@@ -1,0 +1,4 @@
+class,support,correct,precision,recall,f1
+purchase_intent,336,319,0.958,0.9494,0.9537
+passive_browsing,566,545,0.9397,0.9629,0.9511
+churn_risk,237,219,0.969,0.9241,0.946

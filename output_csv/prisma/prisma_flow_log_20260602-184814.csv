@@ -1,0 +1,15 @@
+prisma_stage,description,count,criteria
+1 - Identification,Total records from all platforms,12940,N/A
+1 - Identification,Records from youtube,8835,N/A
+1 - Identification,Records from bluesky,807,N/A
+1 - Identification,Records from hackernews,3298,N/A
+2 - Screening,Records after duplicate removal,12798,EC-1
+2 - Screening,Removed — duplicates,142,EC-1
+2 - Screening,Removed — bot/spam,108,EC-2
+2 - Screening,Records after screening,12690,"EC-1, EC-2"
+3 - Eligibility,Removed — non-English,2122,"EC-3, IC-3"
+3 - Eligibility,Removed — out of date range,1365,"EC-6, IC-2"
+3 - Eligibility,Removed — no keyword match,7246,"EC-5, IC-4"
+3 - Eligibility,Records passing eligibility,5694,IC-1 to IC-5
+4 - Inclusion,Final included records,5694,All IC met
+4 - Inclusion,Total excluded records,7246,One or more EC

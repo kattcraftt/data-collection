@@ -1,0 +1,16 @@
+metric,value,source
+sentiment_negative_count,1655.0,roberta
+sentiment_negative_mean_score,0.2773,roberta
+sentiment_neutral_count,2066.0,roberta
+sentiment_neutral_mean_score,0.3669,roberta
+sentiment_positive_count,1973.0,roberta
+sentiment_positive_mean_score,0.3559,roberta
+behavior_purchase_intent_count,1679.0,behavioral
+behavior_purchase_intent_percent,29.49,behavioral
+behavior_churn_risk_count,1183.0,behavioral
+behavior_churn_risk_percent,20.78,behavioral
+behavior_passive_browsing_count,2832.0,behavioral
+behavior_passive_browsing_percent,49.74,behavioral
+bertopic_unique_topics,45.0,bertopic
+bertopic_outlier_records,1790.0,bertopic
+bertopic_mean_probability,0.5644,bertopic

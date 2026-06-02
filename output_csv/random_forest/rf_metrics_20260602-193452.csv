@@ -1,0 +1,2 @@
+timestamp,train_accuracy,test_accuracy,precision_weighted,recall_weighted,f1_weighted,auc_roc_weighted,cv_accuracy_mean,cv_accuracy_std,cv_f1_mean,cv_f1_std,overfit_gap,n_train,n_test,n_classes,n_features
+20260602-193452,0.9976,0.9508,0.9512,0.9508,0.9508,0.9945,0.9464,0.0057,0.9463,0.0057,0.0468,4555,1139,3,8
